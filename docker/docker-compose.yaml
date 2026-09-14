@@ -1,0 +1,28 @@
+services:
+  db:
+    image: postgres:14
+    container_name: postgres_cli
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: bentalb
+      POSTGRES_PASSWORD: bentalb
+      POSTGRES_DB: testdb
+    volumes:
+      - local_cli_data:/var/lib/postgresql/data
+
+  db-ui:
+    image: dpage/pgadmin4
+    container_name: pg-admin
+    ports:
+      - "8888:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: bentalb@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: bentalb
+    volumes:
+      - local_pg_admin_data:/var/lib/pgadmin
+
+
+volumes:
+  local_pg_admin_data:
+  local_cli_data:

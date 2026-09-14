@@ -1,0 +1,31 @@
+# Environment variables / secrets
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environments
+.venv/
+venv/
+
+# IDE
+.idea/
+.vscode/
+
+# Airflow runtime output
+logs/
+airflow.db
+airflow-webserver.pid
+standalone_admin_password.txt
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
