@@ -1,4 +1,35 @@
+#services:
+#  db:
+#    image: postgres:14
+#    container_name: postgres_cli
+#    ports:
+#      - "5432:5432"
+#    environment:
+#      POSTGRES_USER: bentalb
+#      POSTGRES_PASSWORD: bentalb
+#      POSTGRES_DB: testdb
+#    volumes:
+#      - local_cli_data:/var/lib/postgresql/data
+#
+#  db-ui:
+#    image: dpage/pgadmin4
+#    container_name: pg-admin
+#    ports:
+#      - "8888:80"
+#    environment:
+#      PGADMIN_DEFAULT_EMAIL: bentalb@gmail.com
+#      PGADMIN_DEFAULT_PASSWORD: bentalb
+#    volumes:
+#      - local_pg_admin_data:/var/lib/pgadmin
+#
+#
+#volumes:
+#  local_pg_admin_data:
+#  local_cli_data:
+
+
 services:
+
   db:
     image: postgres:14
     container_name: postgres_cli
@@ -10,6 +41,7 @@ services:
       POSTGRES_DB: testdb
     volumes:
       - local_cli_data:/var/lib/postgresql/data
+      - ./prep/init-scripts:/docker-entrypoint-initdb.d # hadi blassa fin postgress ki rani scripts li fiha automaticment
 
   db-ui:
     image: dpage/pgadmin4
@@ -21,7 +53,40 @@ services:
       PGADMIN_DEFAULT_PASSWORD: bentalb
     volumes:
       - local_pg_admin_data:/var/lib/pgadmin
+    depends_on:
+      - db
 
+  airflow:
+    image: apache/airflow:2.8.1
+    container_name: airflow
+    entrypoint: /bin/bash
+    command:
+      - -c
+      - |
+        airflow db migrate
+        airflow users create \
+        --username admin \
+        --password admin \
+        --firstname Admin \
+        --lastname User \
+        --role Admin \
+        --email admin@example.com || true
+        exec airflow standalone
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__CORE__SQL_ALCHEMY_CONN: "postgresql+psycopg2://bentalb:bentalb@db/airflow"
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      AIRFLOW_CONN_POSTGRES_SUPERSTORE: "postgresql://bentalb:bentalb@db:5432/testdb"
+    volumes:
+      - ../dags:/opt/airflow/dags
+      - ../src:/opt/airflow/src
+      - ../include:/opt/airflow/include
+      - ../logs:/opt/airflow/logs
+      - ../plugins:/opt/airflow/plugins
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
 
 volumes:
   local_pg_admin_data:
